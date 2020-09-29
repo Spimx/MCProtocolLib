@@ -12,7 +12,7 @@ public final class MinecraftConstants {
     /**
      * Current supported game version.
      */
-    public static final String GAME_VERSION = "1.16.2-SNAPSHOT";
+    public static final String GAME_VERSION = "1.16.2";
 
     /**
      * Current supported protocol version.
