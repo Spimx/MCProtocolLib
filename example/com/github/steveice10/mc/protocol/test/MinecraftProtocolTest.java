@@ -28,7 +28,9 @@ import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
 import com.github.steveice10.opennbt.tag.builtin.FloatTag;
 import com.github.steveice10.opennbt.tag.builtin.IntTag;
 import com.github.steveice10.opennbt.tag.builtin.ListTag;
+import com.github.steveice10.opennbt.tag.builtin.LongTag;
 import com.github.steveice10.opennbt.tag.builtin.StringTag;
+import com.github.steveice10.opennbt.tag.builtin.Tag;
 import com.github.steveice10.packetlib.Client;
 import com.github.steveice10.packetlib.ProxyInfo;
 import com.github.steveice10.packetlib.Server;
@@ -44,6 +46,7 @@ import com.github.steveice10.packetlib.tcp.TcpSessionFactory;
 
 import java.net.Proxy;
 import java.util.Arrays;
+import java.util.Map;
 
 public class MinecraftProtocolTest {
     private static final boolean SPAWN_SERVER = true;
@@ -198,7 +201,6 @@ public class MinecraftProtocolTest {
     private static void login() {
         MinecraftProtocol protocol = null;
         if(VERIFY_USERS) {
-
             try {
                 AuthenticationService authService = new AuthenticationService();
                 authService.setUsername(USERNAME);
@@ -249,10 +251,23 @@ public class MinecraftProtocolTest {
 
     private static CompoundTag getDimensionTag() {
         CompoundTag tag = new CompoundTag("");
-        ListTag dimensionTag = new ListTag("dimension");
-        CompoundTag overworldTag = getOverworldTag();
+
+        CompoundTag dimensionTypes = new CompoundTag("minecraft:dimension_type");
+        dimensionTypes.put(new StringTag("type", "minecraft:dimension_type"));
+        ListTag dimensionTag = new ListTag("value");
+        CompoundTag overworldTag = convertToValue("minecraft:overworld", 0, getOverworldTag().getValue());
         dimensionTag.add(overworldTag);
-        overworldTag.put(tag);
+        dimensionTypes.put(dimensionTag);
+        tag.put(dimensionTypes);
+
+        CompoundTag biomeTypes = new CompoundTag("minecraft:worldgen/biome");
+        biomeTypes.put(new StringTag("type", "minecraft:worldgen/biome"));
+        ListTag biomeTag = new ListTag("value");
+        CompoundTag plainsTag = convertToValue("minecraft:plains", 0, getPlainsTag().getValue());
+        biomeTag.add(plainsTag);
+        biomeTypes.put(biomeTag);
+        tag.put(biomeTypes);
+
         return tag;
     }
 
@@ -273,5 +288,45 @@ public class MinecraftProtocolTest {
         overworldTag.put(new ByteTag("ultrawarm", (byte) 0));
         overworldTag.put(new ByteTag("has_ceiling", (byte) 0));
         return overworldTag;
+    }
+
+    private static CompoundTag getPlainsTag() {
+        CompoundTag plainsTag = new CompoundTag("");
+        plainsTag.put(new StringTag("name", "minecraft:plains"));
+        plainsTag.put(new StringTag("precipitation", "rain"));
+        plainsTag.put(new FloatTag("depth", 0.125f));
+        plainsTag.put(new FloatTag("temperature", 0.8f));
+        plainsTag.put(new FloatTag("scale", 0.05f));
+        plainsTag.put(new FloatTag("downfall", 0.4f));
+        plainsTag.put(new StringTag("category", "plains"));
+
+        CompoundTag effects = new CompoundTag("effects");
+        effects.put(new LongTag("sky_color", 7907327));
+        effects.put(new LongTag("water_fog_color", 329011));
+        effects.put(new LongTag("fog_color", 12638463));
+        effects.put(new LongTag("water_color", 4159204));
+
+        CompoundTag moodSound = new CompoundTag("mood_sound");
+        moodSound.put(new IntTag("tick_delay", 6000));
+        moodSound.put(new FloatTag("offset", 2.0f));
+        moodSound.put(new StringTag("sound", "minecraft:ambient.cave"));
+        moodSound.put(new IntTag("block_search_extent", 8));
+
+        effects.put(moodSound);
+
+        plainsTag.put(effects);
+
+        return plainsTag;
+    }
+
+    private static CompoundTag convertToValue(String name, int id, Map<String, Tag> values) {
+        CompoundTag tag = new CompoundTag(name);
+        tag.put(new StringTag("name", name));
+        tag.put(new IntTag("id", id));
+        CompoundTag element = new CompoundTag("element");
+        element.setValue(values);
+        tag.put(element);
+
+        return tag;
     }
 }
