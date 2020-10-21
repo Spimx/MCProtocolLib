@@ -6,6 +6,9 @@ See [example/com/github/steveice10/mc/protocol/test/MinecraftProtocolTest.java](
 
 ## Adding as a Dependency
 
+Testing 123
+Eyes on me
+
 The recommended way of fetching MCProtocolLib is through jitpack.io. See [here](https://jitpack.io/#Steveice10/MCProtocolLib) for more details on how to include MCProtocolLib in your project.
 
 Maven:
